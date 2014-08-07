@@ -109,9 +109,13 @@ public class Main extends Script
 	private State getState()
 	{		
 		// Priority 1: Make sure the user is in the designated spot.
-		if(savedPosition.getX() != myPosition().getX()
-			|| savedPosition.getY() != myPosition().getY()
-			|| savedPosition.getZ() != myPosition().getZ()){
+		// Get current player position
+		Position currentPosition = new Position(
+			myPosition().getX(),
+			myPosition().getY(),
+			myPosition().getZ()
+		);
+		if(savedPosition.distance(currentPosition) >= 3){
 			return State.MOVE;
 		}
 		

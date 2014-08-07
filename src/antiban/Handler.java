@@ -21,43 +21,49 @@ public class Handler {
 		antiban = new Antiban(script);
 	}
 	
-	public void performAntiBan() throws InterruptedException
+	public boolean nextAntiBan()
 	{
 		// Check if an anti ban is due.
-		if(getUnixTime() >= nextAntiban){
-			// Generate a random number, depending on the number of anti ban functions we have. Find its function.
-			switch(randInt(1,6)){
-				case 1:
-					// Move the camera out of the screen and sleep.
-					antiban.simulateAltTab();
-				break;
-				case 2:
-					// Open friends tab and sleep.
-					antiban.checkFriendsOnline();
-				break;
-				case 3:
-					// Move camera pitch/yaw.
-					antiban.moveCamera();
-				break;
-				case 4:
-					// Open inventory and sleep.
-					antiban.checkInventory();
-				break;
-				case 5:
-					// Open skills tab and hover over magic.
-					antiban.checkSkill();
-				break;
-				case 6:
-					// Use pre-defined methods and move mouse randomly.
-					antiban.randomMouseMovement();
-				break;
-				default:
-					
-				break;
-			}
-			// Add some time to the next antiban
-			nextAntiban = getUnixTime() + randInt(30,90);
-		}		
+		if(getUnixTime() >= nextAntiban)
+			return true;
+		else
+			return false;
+	}
+	
+	public void performAntiBan() throws InterruptedException
+	{
+		// Generate a random number, depending on the number of anti ban functions we have. Find its function.
+		switch(randInt(1,6)){
+			case 1:
+				// Move the camera out of the screen and sleep.
+				antiban.simulateAltTab();
+			break;
+			case 2:
+				// Open friends tab and sleep.
+				antiban.checkFriendsOnline();
+			break;
+			case 3:
+				// Move camera pitch/yaw.
+				antiban.moveCamera();
+			break;
+			case 4:
+				// Open inventory and sleep.
+				antiban.checkInventory();
+			break;
+			case 5:
+				// Open skills tab and hover over magic.
+				antiban.checkSkill();
+			break;
+			case 6:
+				// Use pre-defined methods and move mouse randomly.
+				antiban.randomMouseMovement();
+			break;
+			default:
+				
+			break;
+		}
+		// Add some time to the next anti ban
+		nextAntiban = getUnixTime() + randInt(30,90);
 	}
 	
 	// Using unix time to determine when to next perform major and minor anti bans

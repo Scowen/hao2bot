@@ -18,7 +18,7 @@ public class Antiban {
 		// Move the mouse out of the screen.
 		script.mouse.moveOutsideScreen();
 		// Have a little kip!
-		script.sleep(script.random(5000, 20000));
+		script.sleep(script.random(4000, 10000));
 	}
 	
 	// Check friends tab to see who is online.

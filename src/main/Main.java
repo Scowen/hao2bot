@@ -1,14 +1,17 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 import main.State;
 import action.Casting;
 import action.Move;
 import action.Hunt;
+import antiban.Handler;
 
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -32,6 +35,7 @@ public class Main extends Script
 	private Casting casting;
 	private Move move;
 	private Hunt hunt;
+	private Handler antiBanHandler;
 	
 	public void onStart()
 	{
@@ -42,6 +46,7 @@ public class Main extends Script
 		casting = new Casting(this);
 		move = new Move(this);
 		hunt = new Hunt(this);
+		antiBanHandler = new Handler(this);
 		
 		// Set some nulls yo!
 		savedPosition = null;
@@ -70,7 +75,7 @@ public class Main extends Script
 		// Get the state of the environment.
 		State state = getState();
 		
-		logger.info(state);
+		logger.info(status);
 		
 		// Determine what the script needs to do.
 		switch (state)
@@ -83,19 +88,22 @@ public class Main extends Script
 			case FIND_TARGET:
 				// This method will find a target which is not in physical combat, close and suitable.
 				target = hunt.findClosestSuitableTarget(proposedTarget);
-				status = "Finding Target";
+				status = "Get Target";
 			break;
 			case MOVE:
 				// If the user deviates from the starting location, use methods to return.
 				move.moveToSavedPosition(savedPosition);
 				status = "Moving";
-			case ANTIBAN:
-				// Every X amount of time, an AntiBan procedure will be carried out.
-				// antiBan();
 			break;
 			default:
 				logout("Could not determine a state, please screenshot and report steps to forum thread.");
 			break;
+		}
+		
+		// Always check for anti bans.
+		if(antiBanHandler.nextAntiBan()){
+			status = "AntiBan";
+			antiBanHandler.performAntiBan();
 		}
 		
 		return 50;
@@ -103,7 +111,33 @@ public class Main extends Script
 	
 	public void onPaint(Graphics g)
 	{
-//		g.drawString("State: " + getState(), 400, 10);
+		g.setColor(new Color(0, 0, 0, .7f));
+		g.fillRect(7, 345, 220, 65);
+		g.setColor(Color.WHITE);
+		g.drawString("Status: " + status, 15, 357);
+
+		g.setColor(Color.BLACK);
+		g.fillRect(15, 366, 202, 15);
+
+		double delta = skills.getExperienceForLevel(skills.getStatic(Skill.MAGIC) + 1) - skills.getExperienceForLevel(skills.getStatic(Skill.MAGIC));
+		double percentage = (100 - skills.experienceToLevel(Skill.MAGIC) / (delta / 100));
+
+		g.setColor(new Color(79, 192, 24));
+		g.fillRect(16, 367, (int) (200 * (percentage / 100)), 13);
+
+		if (percentage < 55)
+		{
+			g.setColor(Color.WHITE);
+		}
+		else
+		{
+			g.setColor(Color.BLACK);
+		}
+
+		g.drawString(((int) percentage) + "%", 105, 378);
+
+		g.setColor(Color.WHITE);
+		g.drawString("XP and casts TNL: " + skills.experienceToLevel(Skill.MAGIC) + "XP (" + (int) (skills.experienceToLevel(Skill.MAGIC) / 29) + ")", 15, 398);
 	}
 	
 	private State getState()

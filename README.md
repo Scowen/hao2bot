@@ -24,3 +24,13 @@ Well, here they are:
   - The script will keep small track of the runes the user has, making sure to log out when finished.
  - Target finding
   - The user can specify any target around them, the script will look for the most suitable target matching the description and use that as the primary target.
+
+#Script Requirements
+In order to run this script, you will need to meet the following requirements.
+ - Level 19 Magic
+ - 3 Earth, 2 Water, 1 Body rune per spell (Use staffs)
+ - A target (preferably one you can safe-spot)
+ - A magic attack bonus of -65 or below (so you splash every hit)
+
+#Fork Requirements
+In order to fork this script, to modify. You will need to download the latest version of OSbot and use as an external library.

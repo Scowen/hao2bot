@@ -2,6 +2,16 @@ package main;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.DecimalFormat;
+
+import javax.imageio.ImageIO;
 
 import main.State;
 import action.Casting;
@@ -31,14 +41,33 @@ public class Main extends Script
 	private NPC target;
 	private Position savedPosition;
 	private String status;
+	private BufferedImage paintBG;
+	private URL paintUrl;
 	
 	private Casting casting;
 	private Move move;
 	private Hunt hunt;
 	private Handler antiBanHandler;
 	
+	@Override
+	public void onPaint(Graphics2D g)
+	{		
+		g.drawImage(paintBG, 300 , 338 , null);
+	}
+	
+	@Override
 	public void onStart()
 	{
+		status = "Initializing";
+		
+		try {
+			paintUrl = this.getClass().getResource("../Hao2BotCurser.png"); 
+			paintBG = ImageIO.read(paintUrl);
+		} catch (IOException e) {
+			String msg = "Error fetching image. " + e.toString();
+			logger.info(msg);
+		}
+		
 		// Set starting script time.
 		scriptStartTime = System.currentTimeMillis();
 		
@@ -53,10 +82,6 @@ public class Main extends Script
 		target = null;
 		// TODO: TEMPORARY
 		proposedTarget = "Monk of Zamorak";
-		
-		status = "Initializing";
-		
-		script.mouse.setSpeed(1);
 	}
 	
 	@Override
@@ -75,25 +100,23 @@ public class Main extends Script
 		// Get the state of the environment.
 		State state = getState();
 		
-		logger.info(status);
-		
 		// Determine what the script needs to do.
 		switch (state)
 		{
 			case CAST:
+				status = "Casting";
 				// This method will cast the spell on the target (providing there is one).
 				casting.cast(target);
-				status = "Casting";
 			break;
 			case FIND_TARGET:
+				status = "Get Target";
 				// This method will find a target which is not in physical combat, close and suitable.
 				target = hunt.findClosestSuitableTarget(proposedTarget);
-				status = "Get Target";
 			break;
 			case MOVE:
+				status = "Moving";
 				// If the user deviates from the starting location, use methods to return.
 				move.moveToSavedPosition(savedPosition);
-				status = "Moving";
 			break;
 			default:
 				logout("Could not determine a state, please screenshot and report steps to forum thread.");
@@ -107,37 +130,6 @@ public class Main extends Script
 		}
 		
 		return 50;
-	}
-	
-	public void onPaint(Graphics g)
-	{
-		g.setColor(new Color(0, 0, 0, .7f));
-		g.fillRect(7, 345, 220, 65);
-		g.setColor(Color.WHITE);
-		g.drawString("Status: " + status, 15, 357);
-
-		g.setColor(Color.BLACK);
-		g.fillRect(15, 366, 202, 15);
-
-		double delta = skills.getExperienceForLevel(skills.getStatic(Skill.MAGIC) + 1) - skills.getExperienceForLevel(skills.getStatic(Skill.MAGIC));
-		double percentage = (100 - skills.experienceToLevel(Skill.MAGIC) / (delta / 100));
-
-		g.setColor(new Color(79, 192, 24));
-		g.fillRect(16, 367, (int) (200 * (percentage / 100)), 13);
-
-		if (percentage < 55)
-		{
-			g.setColor(Color.WHITE);
-		}
-		else
-		{
-			g.setColor(Color.BLACK);
-		}
-
-		g.drawString(((int) percentage) + "%", 105, 378);
-
-		g.setColor(Color.WHITE);
-		g.drawString("XP and casts TNL: " + skills.experienceToLevel(Skill.MAGIC) + "XP (" + (int) (skills.experienceToLevel(Skill.MAGIC) / 29) + ")", 15, 398);
 	}
 	
 	private State getState()
@@ -167,6 +159,18 @@ public class Main extends Script
 		// Log out the user, display the message given in the console and stop the script.
 		logger.info(message);
 		script.stop();
+	}
+	
+	public String runTime(long i)
+	{
+		DecimalFormat nf = new DecimalFormat("00");
+		long millis = System.currentTimeMillis() - i;
+		long hours = millis / 3600000L;
+		millis -= hours * 3600000L;
+		long minutes = millis / 60000L;
+		millis -= minutes * 60000L;
+		long seconds = millis / 1000L;
+		return nf.format(hours) + ":" + nf.format(minutes) + ":" + nf.format(seconds);
 	}
 
 }

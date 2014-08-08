@@ -33,14 +33,12 @@ public class Casting {
 		
 		// Check if the target exists, can be seen and is actually interactable.
 		if(target != null){
-			if(target.isVisible()){
+			if(!script.magic.isSpellSelected()){
 				if(script.magic.castSpellOnEntity(Spell.CURSE, target)){
 					script.sleep(script.random(41, 1388));
-				} else {
-					cast(target);
 				}
 			} else {
-				script.camera.toEntity(target);
+				script.magic.deselectSpell();
 			}
 		}
 	}

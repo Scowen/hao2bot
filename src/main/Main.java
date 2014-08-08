@@ -1,14 +1,10 @@
 package main;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
+import java.awt.Image;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.DecimalFormat;
 
 import javax.imageio.ImageIO;
@@ -21,7 +17,6 @@ import antiban.Handler;
 
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
-import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -41,8 +36,7 @@ public class Main extends Script
 	private NPC target;
 	private Position savedPosition;
 	private String status;
-	private BufferedImage paintBG;
-	private URL paintUrl;
+	Image paint = getImage("http://i60.tinypic.com/2a50hg2.png");
 	
 	private Casting casting;
 	private Move move;
@@ -52,22 +46,15 @@ public class Main extends Script
 	@Override
 	public void onPaint(Graphics2D g)
 	{		
-		g.drawImage(paintBG, 300 , 338 , null);
+		// g.setColor(Color.BLACK);
+		g.drawImage(this.paint, 251, 344, null);
 	}
 	
 	@Override
 	public void onStart()
 	{
 		status = "Initializing";
-		
-		try {
-			paintUrl = this.getClass().getResource("../Hao2BotCurser.png"); 
-			paintBG = ImageIO.read(paintUrl);
-		} catch (IOException e) {
-			String msg = "Error fetching image. " + e.toString();
-			logger.info(msg);
-		}
-		
+			
 		// Set starting script time.
 		scriptStartTime = System.currentTimeMillis();
 		
@@ -161,7 +148,7 @@ public class Main extends Script
 		script.stop();
 	}
 	
-	public String runTime(long i)
+	private String runTime(long i)
 	{
 		DecimalFormat nf = new DecimalFormat("00");
 		long millis = System.currentTimeMillis() - i;
@@ -173,4 +160,11 @@ public class Main extends Script
 		return nf.format(hours) + ":" + nf.format(minutes) + ":" + nf.format(seconds);
 	}
 
+	private Image getImage(String url)
+    {
+		try {
+			return ImageIO.read(new URL(url));
+		} catch (IOException e) {}
+		return null;
+    }
 }

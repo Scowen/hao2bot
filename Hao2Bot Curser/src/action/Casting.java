@@ -3,6 +3,7 @@ package action;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Spell;
+import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.script.Script;
 
 import main.Main;
@@ -34,10 +35,10 @@ public class Casting {
 		// Check if the target exists, can be seen and is actually interactable.
 		if(target != null){
 			if(!script.magic.isSpellSelected()){
-				if(script.magic.castSpellOnEntity(Spell.CURSE, target)){
-					script.sleep(script.random(41, 1388));
-				}
+				script.magic.castSpellOnEntity(Spell.CURSE, target);
+				script.sleep(script.random(41, 1388));
 			} else {
+				script.tabs.open(Tab.INVENTORY);
 				script.magic.deselectSpell();
 			}
 		}

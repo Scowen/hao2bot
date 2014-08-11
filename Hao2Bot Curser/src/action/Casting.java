@@ -34,28 +34,25 @@ public class Casting {
 		
 		// Check if the target exists, can be seen and is actually interactable.
 		if(target != null){
-			if(!script.magic.isSpellSelected()){
-				script.magic.castSpellOnEntity(Spell.CURSE, target);
-				script.sleep(script.random(41, 1388));
-			} else {
-				script.tabs.open(Tab.INVENTORY);
+			if(script.magic.isSpellSelected()){
 				script.magic.deselectSpell();
+				script.tabs.open(Tab.INVENTORY);
 			}
+			
+			script.magic.castSpellOnEntity(Spell.CURSE, target);
+			script.sleep(script.random(41, 1388));
 		}
 	}
 	
 	// Check if the user has the rune(s) required for the spell.
 	public void checkRunes()
 	{
-		// Get the player inventory.
-		Inventory inv = script.getInventory();
-		
 		// TODO: If a message appears:
 		// You do not have enough XXXX Runes to cast this spell.
 		// Then quit.
 		
 		// Check if it contains any body runes.
-		if(!inv.contains(runes[1])){
+		if(!script.inventory.contains(runes[1])){
 			main.logout("No runes left for spell, logging out.");
 		}
 	}

@@ -64,21 +64,27 @@ public class Main extends Script
 		
 		// Draw the information.
 		g.setColor(Color.WHITE);
-		g.drawString("Status: " + status, x + 10, y + 40);
-		g.drawString("Run Time: " + runTime(startScriptTime), x + 10, y + 60);
-		g.drawString("Exp (p/h): " + (script.skills.getExperience(Skill.MAGIC) - startMagicExp) + "(" + phMagicExp  + "k)", x + 10, y + 90);
+		g.drawString("Status: " + status, x + 20, y + 50);
+		g.drawString("Run Time: " + runTime(startScriptTime), x + 20, y + 70);
+		//int gainedMagicExp = script.skills.getExperience(Skill.MAGIC) - startMagicExp;
+		//g.drawString("Exp (p/h): " + gainedMagicExp + "(" + phMagicExp  + "k)", x + 10, y + 90);
+		//int gainedMagicLevel = script.skills.getStatic(Skill.MAGIC) - startMagicLevel;
+		//g.drawString("Level: " + script.skills.getStatic(Skill.MAGIC) + "(+" + gainedMagicLevel  + ")", x + 10, y + 100);
 	}
 	
 	@Override
 	public void onStart()
 	{
-		status = "Initializing";
+		status = "Initializing Script";
+		
+		// Set GUI
+		gui = new GUI();
+		guiActive = true;
+		gui.setEnabled(true);
+		gui.setVisible(true);
 			
 		// Set starting script time.
 		startScriptTime = System.currentTimeMillis();
-		// Set starting magic experience and level
-		startMagicExp = script.skills.getExperience(Skill.MAGIC);
-		startMagicLevel = script.skills.getStatic(Skill.MAGIC);
 		
 		// Initialise classes.
 		casting = new Casting(this);
@@ -86,23 +92,26 @@ public class Main extends Script
 		hunt = new Hunt(this);
 		antiBanHandler = new Handler(this);
 		
-		proposedTarget = null;
-		
 		// Set some nulls yo!
 		savedPosition = null;
 		target = null;
-		gui = new GUI();
-		guiActive = true;
-		gui.setVisible(true);
+		proposedTarget = null;
+		startMagicExp = 0;
+		startMagicLevel = 0;
 	}
 	
 	@Override
 	public int onLoop() throws InterruptedException 
-	{		
+	{	
+		if(proposedTarget != null)
+			logger.info(proposedTarget);
 		
-		
+		// Check if the GUI is still open
 		if(checkGUIActive())
 			return 100;
+		
+		// Update the paint stats with the users stats.
+		updateStats();
 		
 		// Check the script has placed a saved position
 		checkSavedPosition();
@@ -114,17 +123,17 @@ public class Main extends Script
 		switch (state)
 		{
 			case CAST:
-				status = "Casting";
+				status = "Casting on Target";
 				// This method will cast the spell on the target (providing there is one).
 				casting.cast(target);
 			break;
 			case FIND_TARGET:
-				status = "Get Target";
+				status = "Searching for Target";
 				// This method will find a target which is not in physical combat, close and suitable.
 				target = hunt.findClosestSuitableTarget(proposedTarget);
 			break;
 			case MOVE:
-				status = "Moving";
+				status = "Moving to Saved Position";
 				// If the user deviates from the starting location, use methods to return.
 				move.moveToSavedPosition(savedPosition);
 			break;
@@ -138,9 +147,6 @@ public class Main extends Script
 			status = "AntiBan";
 			antiBanHandler.performAntiBan();
 		}
-		
-		// Get the magic exp per hour
-		getExpPerHour();
 		
 		return 60;
 	}
@@ -167,6 +173,18 @@ public class Main extends Script
 		return State.CAST;
 	}
 	
+	public void updateStats()
+	{
+		// Set starting magic experience and level
+		if(startMagicExp == 0)
+			startMagicExp = script.skills.getExperience(Skill.MAGIC);
+		if(startMagicExp == 0)
+			startMagicExp = script.skills.getStatic(Skill.MAGIC);
+		
+		// Get the magic exp per hour
+		getExpPerHour();
+	}
+	
 	public void getExpPerHour()
 	{
 		phMagicExp = Integer.toString(Math.round((expPerHour(startScriptTime, startMagicExp, Skill.MAGIC) / 1000)), 1);
@@ -177,15 +195,19 @@ public class Main extends Script
 		// If the GUI is still open, wait for that.
 		if(guiActive){
 			// Check if the GUI has been closed.
-			if(!gui.isActive() || !gui.isVisible() || proposedTarget != null){
+			if(proposedTarget != null){
+				// Set all properties false if one of the statements is true.
 				guiActive = false;
+				gui.setVisible(false);
+				gui.setEnabled(false);
 				return false;
+			} else {
+				status = "Waiting for GUI Input";
+				return true;
 			}
+		} else {
+			return false;
 		}
-		
-		status = "Waiting for target selection";
-		
-		return true;
 	}
 	
 	public void checkSavedPosition()
@@ -204,6 +226,7 @@ public class Main extends Script
 	public void logout(String message)
 	{
 		// Log out the user, display the message given in the console and stop the script.
+		status = "Logging Out";
 		logger.info(message);
 		script.stop();
 	}
